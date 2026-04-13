@@ -1,4 +1,3 @@
-Libraries:
-  streamlit
-  pandas
-  plotly
+streamlit
+pandas
+plotly
