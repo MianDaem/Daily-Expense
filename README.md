@@ -7,6 +7,6 @@ REQUIRMENT:
   Libraries
     streamlit
     pandas
-    plotly
+    plotly.express
 
   pip install streamlit pandas plotly os datetime
