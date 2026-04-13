@@ -4,6 +4,9 @@ A sleek, responsive web application designed to help users take control of their
 
 
 REQUIRMENT:
-  Libraries [streamlit,pandas,plotly,os,datetime]
+  Libraries
+    streamlit
+    pandas
+    plotly
 
   pip install streamlit pandas plotly os datetime
