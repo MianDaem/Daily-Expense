@@ -38,17 +38,26 @@ if not st.session_state.get("authentication_status"):
 
     with tab2:
         try:
-            # register_user returns True if the user successfully fills the form
-            if authenticator.register_user(location='main'):
-                # We save the config only if the registration was successful
+            # result is True only when a user successfully registers
+            result = authenticator.register_user(location='main')
+            
+            if result:
+                # 1. Update the config file
                 with open(CONFIG_FILE, 'w') as file:
                     yaml.dump(config, file, default_flow_style=False)
-                st.success('User registered successfully! Now go to the Login tab.')
+                
+                # 2. Trigger a Popup (Toast)
+                st.toast('✅ Account Created! You can now log in.', icon='🚀')
+                
+                # 3. Brief sleep and rerun to clear the registration state
+                import time
+                time.sleep(1) 
+                st.rerun()
+
         except Exception as e:
-            # If the username already exists, the library throws an error
-            # We catch it here and show a helpful message
+            # Catching the common "username already exists" error
             if "already exists" in str(e).lower():
-                st.error("This username is already taken. Please choose another one.")
+                st.error("Username already taken. Please try another.")
             else:
                 st.error(f"Registration Error: {e}")
 
