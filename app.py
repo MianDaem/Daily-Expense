@@ -38,12 +38,26 @@ if not st.session_state.get("authentication_status"):
 
     with tab2:
         try:
-            # register_user returns True if the user successfully fills the form
+            # Count users BEFORE the registration form
+            before_count = len(config['credentials']['usernames'])
+            
+            # The registration component
+            # If it returns True, it means the form was submitted correctly
             if authenticator.register_user(location='main'):
-                # We save the config only if the registration was successful
-                with open(CONFIG_FILE, 'w') as file:
-                    yaml.dump(config, file, default_flow_style=False)
-                st.success('User registered successfully! Now go to the Login tab.')
+                # Count users AFTER
+                after_count = len(config['credentials']['usernames'])
+                
+                # ONLY show success and SAVE if a new user was actually added to the dictionary
+                if after_count > before_count:
+                    with open(CONFIG_FILE, 'w') as file:
+                        yaml.dump(config, file, default_flow_style=False)
+                    
+                    st.success('✅ Registration successful! Please switch to the Login tab.')
+                else:
+                    # This handles the "Ghost Success" - if the library returns True 
+                    # but no new user was added, we stay silent or show a prompt.
+                    st.info("Fill out the form above to create your account.")
+                    
         except Exception as e:
             # If the username already exists, the library throws an error
             # We catch it here and show a helpful message
