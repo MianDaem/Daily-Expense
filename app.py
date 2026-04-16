@@ -15,7 +15,7 @@ PROFILE_FILE = BASE_DIR / "user_profiles.csv"
 DEFAULT_BUDGET = 50000.0
 ADMIN_ROLE = "admin"
 EXPENSE_COLUMNS = ["Date", "Category", "Item", "Amount"]
-PROFILE_COLUMNS = ["username", "full_name", "email", "phone", "monthly_budget", "currency", "city", "notes"]
+PROFILE_COLUMNS = ["username", "full_name", "email", "monthly_budget", "currency", "notes"]
 CATEGORY_OPTIONS = ["Food", "Transport", "Bills", "Shopping", "Entertainment", "Health", "Education", "Other"]
 
 
@@ -150,10 +150,8 @@ def get_user_profile(username: str, config: dict) -> dict:
         "username": username,
         "full_name": build_full_name(username, config),
         "email": config["credentials"]["usernames"].get(username, {}).get("email", ""),
-        "phone": "",
         "monthly_budget": DEFAULT_BUDGET,
         "currency": "Rs",
-        "city": "",
         "notes": "",
     }
     if record.empty:
@@ -164,9 +162,7 @@ def get_user_profile(username: str, config: dict) -> dict:
     row["monthly_budget"] = float(row.get("monthly_budget", DEFAULT_BUDGET) or DEFAULT_BUDGET)
     row["full_name"] = row.get("full_name") or default_profile["full_name"]
     row["email"] = row.get("email") or default_profile["email"]
-    row["phone"] = row.get("phone", "")
     row["currency"] = row.get("currency") or "Rs"
-    row["city"] = row.get("city", "")
     row["notes"] = row.get("notes", "")
     return row
 
@@ -282,24 +278,20 @@ def render_sidebar(username: str, name: str, authenticator, profile: dict):
         st.sidebar.error("Please enter a valid item and amount greater than zero.")
 
     st.sidebar.markdown("---")
-    st.sidebar.subheader("Profile & Budget")
-    with st.sidebar.form("profile_form"):
-        full_name = st.text_input("Full Name", value=profile["full_name"])
-        phone = st.text_input("Phone", value=profile["phone"])
-        city = st.text_input("City", value=profile["city"])
-        monthly_budget = st.number_input("Monthly Budget", min_value=0.0, value=float(profile["monthly_budget"]), step=500.0)
-        currency = st.text_input("Currency", value=profile["currency"])
-        notes = st.text_area("Notes", value=profile["notes"])
-        save_profile_clicked = st.form_submit_button("Save Personal Details")
-    if save_profile_clicked:
-        profile["full_name"] = full_name.strip() or profile["full_name"]
-        profile["phone"] = phone.strip()
-        profile["city"] = city.strip()
-        profile["monthly_budget"] = float(monthly_budget)
-        profile["currency"] = currency.strip() or "Rs"
-        profile["notes"] = notes.strip()
-        save_user_profile(profile)
-        st.sidebar.success("Personal details updated.")
+    with st.sidebar.expander("Profile & Budget", expanded=False):
+        with st.form("profile_form"):
+            full_name = st.text_input("Full Name", value=profile["full_name"])
+            monthly_budget = st.number_input("Monthly Budget", min_value=0.0, value=float(profile["monthly_budget"]), step=500.0)
+            currency = st.text_input("Currency", value=profile["currency"])
+            notes = st.text_area("Notes", value=profile["notes"])
+            save_profile_clicked = st.form_submit_button("Save Personal Details")
+        if save_profile_clicked:
+            profile["full_name"] = full_name.strip() or profile["full_name"]
+            profile["monthly_budget"] = float(monthly_budget)
+            profile["currency"] = currency.strip() or "Rs"
+            profile["notes"] = notes.strip()
+            save_user_profile(profile)
+            st.sidebar.success("Personal details updated.")
 
     st.sidebar.markdown("---")
     authenticator.logout("Logout", "sidebar")
@@ -336,7 +328,7 @@ def render_dashboard(df: pd.DataFrame, display_df: pd.DataFrame, profile: dict, 
         f"""
         <div class="hero-card">
             <h1>{name}'s Expense Dashboard</h1>
-            <p class="muted">Monthly budget: <strong>{currency}{profile['monthly_budget']:,.0f}</strong> | City: <strong>{profile['city'] or 'Not set'}</strong></p>
+            <p class="muted">Monthly budget: <strong>{currency}{profile['monthly_budget']:,.0f}</strong> | Notes ready for your personal finance goals.</p>
             <span class="pill">Budget-aware tracking</span><span class="pill">Personal details</span><span class="pill">Live analytics</span>
         </div>
         """,
@@ -434,7 +426,7 @@ def render_admin_panel(config: dict, current_username: str) -> None:
         if submitted:
             st.success(update_user_credentials(selected_user, email, first_name, last_name, new_password or None, make_admin, config))
             st.rerun()
-        st.markdown(f"<div class='glass-card'><h3>Stored Profile</h3><p class='muted'>Budget: {profile['currency']}{float(profile['monthly_budget']):,.0f}</p><p class='muted'>Phone: {profile['phone'] or 'Not set'} | City: {profile['city'] or 'Not set'}</p></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='glass-card'><h3>Stored Profile</h3><p class='muted'>Budget: {profile['currency']}{float(profile['monthly_budget']):,.0f}</p><p class='muted'>Email: {profile['email'] or 'Not set'}</p></div>", unsafe_allow_html=True)
     with tab3:
         if selected_user == current_username:
             st.warning("You cannot delete your own active account from this session.")
