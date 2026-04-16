@@ -1,0 +1,4 @@
+data_*.csv
+config.yaml
+__pycache__/
+.streamlit/
